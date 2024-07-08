@@ -1,0 +1,119 @@
+\documentclass{article}
+\usepackage{graphicx} % Required for inserting images
+\usepackage{hyperref}
+\usepackage{booktabs}
+\title{Tarea 5 Aprendizaje no supervisado}
+\author{
+Universidad Autonoma de Nuevo León \\
+Alanis Mares, Victor Hugo}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section{Introducción}
+Se pretende analizar un conjunto de series de tiempo con diferentes indicadores macroeconomicos para implementar un sistema de clasificacion no supervisada.
+
+\section{Descripción de los datos}
+Los datos a trabajar cuentan con 16 variables de las cuales 11 son referentes a la serie de tiempo multivariada y 5 son categoricas.
+Para propositos de este estudio de clusterizacion se utilizaran las 11 variables numericas, las cuales son:
+
+\begin{itemize}
+    \item Year: Año de observacion
+    \item Under\_five\_deaths: Cantidad de muertes en infantes menores de 5 años por cada 1000 habitantes
+    \item Adult\_mortality: Cantidad de muertes en adultos por cada 1000 habitantes
+    \item Alcohol\_consumption: Litros anualizados de consumo de alcohol por capita
+    \item Hepatitis\_B: Cantidad porcentual de niños de 1 año inmunizados con la vacuna para la Hepatitis B
+    \item BMI: Indice de grasa corporal promedio
+    \item Polio: Cantidad porcentual de niños de 1 año inmunizados con la vacuna para la Polio
+    \item Diptheria: Cantidad porcentual de niños de 1 año inmunizados con la vacuna para tetanos
+    \item Incidents\_HIV: Casos de VIH por cada 1000 habitantes
+    \item GDP\_per\_capita: Producto interno bruto per capita
+    \item Schooling: Cantidad de años promedio que un adulto (25+) ha pasado estudiando
+    \item Life\_expectancy: expectativa de vida al nacimiento
+\end{itemize}
+
+\subsection{Origen de los datos}
+
+Los datos fueron obtenidos de un registro público de conjuntos de datos, los cuales provienen de estudios de múltiples hospitales, a continuación se encuentra el enlace al \href{https://www.kaggle.com/datasets/lashagoch/life-expectancy-who-updated}{conjunto de datos} .
+
+
+
+\subsection{Preprocesamiento}
+Basado en un analisis de caracteristicas se decidio omitir ciertas variables del conjunto, para más informacion al respecto referirse a este \href{https://github.com/Ragres/Apendizaje-Automatico/blob/main/Tareas_clase_4/Tarea_7_8.ipynb}{repositorio}
+
+\section{Metodología}
+Para este analisis se usara un algoritmo de gas neuronal creciente (o GNS por sus siglas en ingles) partiendo de la libreria neupy para la aplicacion del algoritmo, numpy para algebra matricial necesaria y pandas para manejo de datos.
+
+\section{Descripción del algoritmo GNS}
+
+Citado por primera vez en \href{https://proceedings.neurips.cc/paper/1994/file/d56b9fc4b0f1be8871f5e1c40c0067e7-Paper.pdf} (1995) el algoritmo GNS parte de vectores con la misma dimensionalidad y busca generar un grafo el cual explique la distribucion de los puntos al mismo tiempo que minimiza el error.
+
+\section{Fundamento matematico}
+Partiendo de 2 puntos aleatorios conectados entre si se sigue el siguiente algoritmo en cada iteracion con cada vector ingresado por el conjunto datos:
+\begin{itemize}
+    \item 1: Se calcula la distancia entre el vector ingresado y los dos nodos más cercanos
+    \item 2: El error del nodo más cercano es sumado al error del vector (el cual inicializa en 0)
+    \item 3: El nodo más cercano y todo nodo conectado a el es movido en funcion de los errores acumulados de cada nodo, en direccion del vector ingresado.
+    \item 4: La variable "edad" de cada arista ya existente se aumenta en 1.
+    \item 5: En caso de que el nodo más cercano y el segundo nodo más cercano esten conectados entre si su arista es igualada a 0 , en caso contrario se crea una arista entre ambos nodos.
+    \item 6: Se comprueba la edad de cada arista, en caso de que sea mayor a una variable previamente decidida se elimina el arista.
+    \item 7: En caso de que la iteracion actual sea multiplo de una variable previamente decida se agrega un nodo al azar al sistema conectando el nodo con el error más grande y su vecino más cercano, despues se elimina el arista que conecta a ambos nodos.
+    \item 8: Se decrementa el error acumulado de todos los nodos en el sistema por un factor constante
+    \item 9: Se repite el proceso hasta que el algoritmo haya llegado a las iteraciones previamente definidas
+    
+\end{itemize}
+
+\section{Resultados}
+
+Tras aplicar el algoritmo de clusterizacion se llego a 20 clusteres identificados mismos que fueron graficados a lo largo del tiempo, la grafica general de todos los puntos de datos clusterizada se ve de la siguiente forma:
+
+\begin{figure}[p]
+  \centering
+  \includegraphics[scale=1]{imagen_2024-07-08_133417657.png}
+  \caption{Clusterizacion en el año 2000}
+  \label{fig:2}
+\end{figure}
+
+Como se puede apreciar en la figura (1) realmente no existe mucha distincion debido a la gran densidad de datos, por eso mismo se procedio a dividir los datos por año para ver si se podia obtener un mejor entendimiento de los clusteres
+
+
+\begin{figure}[p]
+  \centering
+  \includegraphics[width=1\linewidth]{newplot (2).png}
+  \caption{Clusterizacion en el año 2000}
+  \includegraphics[width=1\linewidth]{newplot (3).png}
+  \caption{Clusterizacion en el año 2015}
+  \label{fig:nombre}
+\end{figure}
+
+
+
+
+
+\section{Conclusiones}
+
+Se aprecia como la clusterizacion se mantiene relativamente constante al pasar los años y como el algoritmo parece haberse concentrado en la parte de los datos con alta expectativa de vida y clasificando el resto de datos dentro del mismo cluster.
+
+
+
+
+\begin{thebibliography}{9}
+\bibitem{texbook}
+Bernd Fritzke (1995) A Growing Neural Gas Network Learns
+Topologies.
+
+\bibitem{lamport94}
+
+Halil Ertan (2022) Multivariate Time Series Clustering Using Growing Neural Gas and Spectral Clustering
+\end{thebibliography}
+
+
+
+
+
+
+\end{document}
+
+
