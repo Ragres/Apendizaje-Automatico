@@ -1,0 +1,334 @@
+{\rtf1\ansi\ansicpg1252\deff0\nouicompat\deflang3082{\fonttbl{\f0\fnil\fcharset0 Calibri;}}
+{\*\generator Riched20 10.0.22621}\viewkind4\uc1 
+\pard\sa200\sl276\slmult1\f0\fs22\lang10\\documentclass\{article\}\par
+\\usepackage\{graphicx\} % Required for inserting images\par
+\\usepackage\{hyperref\}\par
+\\usepackage\{booktabs\}\par
+\\usepackage\{graphicx\} % Required for inserting images\par
+\\usepackage\{float\}\par
+\par
+\\title\{PIA Aprendizaje Automatico\}\par
+\\author\{\par
+Universidad Autonoma de Nuevo Le\'f3n \\\\\par
+Alanis Mares, Victor Hugo\}\par
+\\date\{19 de Julio, 2024\}\par
+\\begin\{document\}\par
+\\maketitle\par
+\par
+\par
+\par
+\\section\{Introducci\'f3n\}\par
+Se pretende analizar la evoluci\'f3n de la expectativa de vida a lo largo de 15 a\'f1os en diferentes pa\'edses tomando como referencia un conjunto de series de tiempo de diferentes indicadores macroecon\'f3micos para implementar un sistema de clasificaci\'f3n no supervisada y posteriormente una predicci\'f3n con base en un algoritmo supervisado.\par
+\par
+\\section\{Descripci\'f3n de los datos\}\par
+Los datos a trabajar cuentan con 16 variables, de las cuales once son referentes a la serie de tiempo multivariada y cinco son categ\'f3ricas.\par
+Para prop\'f3sitos de este estudio se tomar\'e1n en cuenta las siguientes 11 variables num\'e9ricas:\par
+\par
+\\begin\{itemize\}\par
+    \\item Year: A\'f1o de observaci\'f3n.\par
+    \\item Under\\_five\\_deaths: Cantidad de muertes en infantes menores de 5 a\'f1os por cada 1000 habitantes.\par
+    \\item Adult\\_mortality: Cantidad de muertes en adultos por cada 1000 habitantes.\par
+    \\item Alcohol\\_consumption: Litros anualizados de consumo de alcohol per capita.\par
+    \\item Hepatitis\\_B: Cantidad porcentual de ni\'f1os de 1 a\'f1o inmunizados con la vacuna para la Hepatitis B.\par
+    \\item BMI: \'cdndice de grasa corporal promedio.\par
+    \\item Polio: Cantidad porcentual de ni\'f1os de 1 a\'f1o inmunizados con la vacuna para la Polio.\par
+    \\item Diptheria: Cantidad porcentual de ni\'f1os de 1 a\'f1o inmunizados con la vacuna para t\'e9tanos.\par
+    \\item Incidents\\_HIV: Casos de VIH por cada 1000 habitantes.\par
+    \\item GDP\\_per\\_capita: Producto interno bruto per capita.\par
+    \\item Schooling: Cantidad de a\'f1os promedio que un adulto (25+) ha pasado estudiando.\par
+    \\item Life\\_expectancy: expectativa de vida al nacimiento.\par
+\\end\{itemize\}\par
+\par
+Cabe mencionar, que el conjunto original de datos presentaba un total de 21 variables, mismas que fueron reducidas a las 16 previamente mencionadas, el proceso de selecci\'f3n de variables ser\'e1 explicada de forma m\'e1s extensa en la secci\'f3n \ldblquote Preprocesamiento\rdblquote .\par
+\par
+\\subsection\{Origen de los datos\}\par
+\par
+Los datos fueron obtenidos de un registro p\'fablico de conjuntos de datos, los cuales provienen de estudios de m\'faltiples hospitales, a continuaci\'f3n se encuentra el enlace al \\href\{https://www.kaggle.com/datasets/lashagoch/life-expectancy-who-updated\}\{conjunto de datos\}.\par
+\par
+\par
+\par
+\\section\{Preprocesamiento\}\par
+\par
+\\subsection\{Omisi\'f3n de variables previo a estudio\}\par
+Dado que se realizar\'e1 un an\'e1lisis de series de tiempo multivariado para prop\'f3sitos de estudiar el impacto de las variables, no se tomar\'e1n en cuenta 5 variables en espec\'edfico:\par
+\par
+\\begin\{itemize\}\par
+    \\item 1: Country.\par
+    \\item 2: Region.\par
+    \\item 3: Year.\par
+    \\item 4: Economy\\_status\\_Developed.\par
+    \\item 5: Economy\\_status\\_Developing.   \par
+\\end\{itemize\}\par
+\par
+Primeramente, el a\'f1o no constituye a una variable de la cual que se pueda eliminar debido a que se har\'e1 un estudio de series de tiempo, dicho est\'f3 se omitir\'e1 completamente de esta parte de selecci\'f3n de variables dado que podr\'eda considerarse v\'e1lida "por defecto".\par
+En contraste, las otras 4 variables constituyen a variables categ\'f3ricas, las cuales no cumplen con una funci\'f3n que pueda considerarse \'fatil para prop\'f3sitos de nuestro an\'e1lisis de series de tiempo, dado que se busca hacer una clasificaci\'f3n con base en las propiedades intr\'ednsecas de las series de tiempo, no de variables categ\'f3ricas por lo cual se omitir\'e1n de este paso.\par
+\par
+\\subsection\{An\'e1lisis de relaci\'f3n de variables\}\par
+\par
+\\subsubsection\{An\'e1lisis de regresi\'f3n F\}\par
+Utilizando un pre-procesador se busca encontrar las variables m\'e1s relevantes con respecto a la variable respuesta, para esto usaremos un selector basado en las K mejores variables utilizando una regresi\'f3n F.\par
+\par
+\\begin\{figure\}[h]\par
+  \\centering\par
+  \\includegraphics[width=1\\linewidth]\{variables.pdf\}\par
+  \\caption\{Top 10 variables ordenadas por su puntuaci\'f3n F\}\par
+  \\label\{fig:abs\}\par
+\\end\{figure\}\par
+\par
+Se puede apreciar en la Figura 1 como la mortalidad adulta es precisamente uno de los mejores indicadores con respecto a la expectativa de vida, lo cual tiene sentido dado que un pa\'eds con una gran mortalidad en adultos de todas las edades no contar\'eda con una expectativa de vida alta; sin embargo, vamos a se realizar\'e1n m\'e1s pruebas para confirmar qu\'e9 variables pueden ser relevantes, empezando con el an\'e1lisis del p-valor.\par
+\par
+\\subsubsection\{An\'e1lisis de p-valor\}\par
+\\begin\{center\}\par
+\\begin\{tabular\}\{||c c||\}\par
+        \\hline\par
+ Variable & p-valor  \\\\ [0.5ex] \par
+ \\hline\\hline\par
+        Infant\\_deaths & 0 \\\\\par
+        \\hline\par
+         Under\\_five\\_deaths& 0 \\\\\par
+        \\hline\par
+         Adult\\_mortality& 0 \\\\\par
+         \\hline\par
+          Polio &0 \\\\\par
+          \\hline\par
+         Schooling &0 \\\\\par
+         \\hline\par
+         Diptheria  & 0 \\\\\par
+         \\hline\par
+         BMI & 0 \\\\\par
+         \\hline\par
+        GDP\\_per\\_capita & 0  \\\\\par
+        \\hline\par
+        VIH & 0  \\\\\par
+        \\hline\par
+         Measles& 0 \\\\\par
+         \\hline\par
+         Thinnes\\_ten\\_nineteen\\_years & 0 \\\\\par
+         \\hline\par
+ Thinness\\_five\\_nine\\_years        & 0 \\\\\par
+         \\hline\par
+  Hepatitis\\_B        & 0 \\\\\par
+  \\hline\par
+ Alcohol\\_consumption        & 0\\\\\par
+ \\hline\par
+ Population\\_mln&.15 \\\\\par
+ \\hline\par
+    \\end\{tabular\}\par
+\\end\{center\}\par
+\par
+Bajo la misma l\'ednea, se puede apreciar c\'f3mo otro indicativo importante para determinar la expectativa de vida (la cual hasta cierto punto es un indicativo de la salud general de un pa\'eds) es precisamente la mortalidad tanto en adultos como en infantes.\par
+\par
+Algo a destacar es el hecho de que todos los p-valores que se obtuvieron son significativamente bajos, con excepci\'f3n de la poblaci\'f3n, esto podr\'eda ser un buen indicativo de que la poblaci\'f3n tal vez no sea la mejor variable a estudiar para este an\'e1lisis dado a su gran variaci\'f3n entre pa\'edses.\par
+\par
+\\subsubsection\{An\'e1lisis de correlaci\'f3n\}\par
+\par
+Al emplear un analisis de correlaci\'f3n con respecto a la expectativa de vida se obtuvieron los resultados visibles en la Figura 2.\par
+\par
+\\begin\{figure\}[H]\par
+  \\centering\par
+  \\includegraphics[width=1\\linewidth]\{correlacion.pdf\}\par
+  \\caption\{Variables ordenadas por su valor de correlaci\'f3n con respecto a la expectativa de vida\}\par
+  \\label\{fig:baba\}\par
+\\end\{figure\}\par
+\par
+Se puede apreciar como la variable "Thinness\\_five\\_nine\\_years" tiene la correlaci\'f3n m\'e1s baja siendo practicamente 0.\par
+\par
+\\subsubsection\{An\'e1lisis de informaci\'f3n mutua\}\par
+\par
+Al emplear un analisis de informaci\'f3n mutua se obtuvieron los resultados visibles en la Figura 3.\par
+\par
+\\begin\{figure\}[H]\par
+  \\centering\par
+  \\includegraphics[width=1\\linewidth]\{mi.pdf\}\par
+  \\caption\{Variables ordenadas por su valor de informaci\'f3n mutua\}\par
+  \\label\{fig:baba\}\par
+\\end\{figure\}\par
+\par
+\par
+Se puede apreciar como la variable "Thinness\\_ten\\_nineteen\\_years" junto con "Alcohol\\_consumption" son las m\'e1s bajas. \par
+\par
+\\subsection\{Selecci\'f3n final de variables\}\par
+\par
+Basado en los an\'e1lisis previos se han omitido las siguientes variables:\par
+\par
+\par
+Population: No se considera que la poblaci\'f3n total sea un indicador efectivo dado que las variaciones en la misma no necesariamente tienen relaci\'f3n con la expectativa de vida, tanto como se tiene con el espacio disponible (i.e: Un pa\'eds puede tener una muy buena calidad de vida pero tener poca poblaci\'f3n puramente por su territorio disponible)\par
+\par
+Thiness\\_five\\_nine\\_year y Thinness\\_ten\\_nineteen\\_years: Toda la informaci\'f3n que nos puede presentar esta variable podr\'eda ser explicado con otras dos variables que s\'ed se van a incluir en el modelo (BMI y Under\\_five\\_years), esto se puede apreciar en el an\'e1lisis de correlaci\'f3n dado que las variables mencionadas obtuvieron un \'edndice de correlaci\'f3n muy alto\par
+\par
+Infant\\_deaths: Parecido a las variables previamente mencionadas, la informaci\'f3n relevante se encuentra en Under\\_five\\_deaths dado que es una edad donde una muerte ser\'eda m\'e1s inesperada.\par
+\par
+Measless: Estudiar el grado de inmunidad a una enfermedad puede ser un buen indicador del nivel de salud del pa\'eds, sin embargo el sarampi\'f3n no representa tanto un buen indicador con respecto al polio, esto se puede apreciar dado que en pr\'e1cticamente todas las pruebas de relevancia de variable el polio obtuvo un mejor valor que el sarampi\'f3n\par
+\par
+\par
+\\section\{Metodolog\'eda no supervisada\}\par
+Para este analisis se usar\'e1 un algoritmo de gas neuronal creciente (o GNS por sus siglas en ingl\'e9s) partiendo de la librer\'eda \\texttt\{neupy\} para la aplicaci\'f3n del algoritmo, \\texttt\{numpy\} para \'e1lgebra matricial necesaria y \\texttt\{pandas\} para manejo de datos.\par
+\par
+\\subsection\{Descripci\'f3n del algoritmo GNS\}\par
+\par
+Citado por primera vez en \\href\{https://proceedings.neurips.cc/paper/1994/file/d56b9fc4b0f1be8871f5e1c40c0067e7-Paper.pdf\} \{1995\}, el algoritmo GNS parte de vectores con la misma dimensionalidad y busca generar un grafo el cual explique la distribuci\'f3n de los puntos al mismo tiempo que minimiza el error.\par
+\par
+\\subsection\{Fundamento matem\'e1tico\}\par
+Partiendo de 2 puntos aleatorios conectados entre s\'ed, se sigue el siguiente algoritmo en cada iteraci\'f3n con cada vector ingresado por el conjunto datos:\par
+\\begin\{itemize\}\par
+    \\item 1: Se calcula la distancia entre el vector ingresado y los dos nodos m\'e1s cercanos\par
+    \\item 2: El error del nodo m\'e1s cercano es sumado al error del vector (el cual inicializa en 0)\par
+    \\item 3: El nodo m\'e1s cercano y todo nodo conectado a \'e9l es movido en funci\'f3n de los errores acumulados de cada nodo, en direcci\'f3n del vector ingresado.\par
+    \\item 4: La variable "edad" (Con la cual todo arista es inicializado en 0) de cada arista ya existente se aumenta en 1.\par
+    \\item 5: En caso de que el nodo m\'e1s cercano y el segundo nodo m\'e1s cercano est\'e9n conectados entre s\'ed su arista es igualada a 0 , en caso contrario se crea una arista entre ambos nodos.\par
+    \\item 6: Se comprueba la edad de cada arista, en caso de que sea mayor a una variable previamente decidida se elimina la arista.\par
+    \\item 7: En caso de que la iteraci\'f3n actual sea multiplo de una variable previamente decidida se agrega un nodo al azar al sistema conectando el nodo con el error m\'e1s grande y su vecino m\'e1s cercano, despu\'e9s se elimina la arista que conecta a ambos nodos.\par
+    \\item 8: Se decrementa el error acumulado de todos los nodos en el sistema por un factor constante\par
+    \\item 9: Se repite el proceso hasta que el algoritmo haya llegado a las iteraciones previamente definidas\par
+    \par
+\\end\{itemize\}\par
+\par
+\\subsection\{Resultados no supervisados\}\par
+\par
+Tras aplicar el algoritmo de agrupamiento se lleg\'f3 a 20 grupos identificados, mismos que fueron graficados a lo largo del tiempo, la gr\'e1fica general de todos los puntos de datos agrupados se ve de la siguiente forma:\par
+\par
+\\begin\{figure\}[H]\par
+  \\centering\par
+  \\includegraphics[scale=1]\{Captura de pantalla 2024-07-08 133357.png\}\par
+  \\caption\{Agrupamiento de todos los puntos estudiados.\}\par
+  \\label\{fig:2\}\par
+\\end\{figure\}\par
+\par
+Como se puede apreciar en la figura 4, realmente no existe mucha distinci\'f3n debido a la gran densidad de datos, por eso mismo se procedi\'f3 a dividir los datos por a\'f1o para observar si se pod\'eda obtener un mejor entendimiento de los grupos.\par
+\par
+\par
+\\begin\{figure\}[H]\par
+  \\centering\par
+  \\includegraphics[width=1\\linewidth]\{newplot (2).png\}\par
+  \\caption\{Agrupamiento en el a\'f1o 2000\}\par
+  \\label\{fig:nombre\}\par
+\\end\{figure\}\par
+\par
+\\begin\{figure\}[H]\par
+  \\centering\par
+  \\includegraphics[width=1\\linewidth]\{newplot (4).png\}\par
+  \\caption\{Agrupamiento en el a\'f1o 2007\}\par
+  \\label\{fig:nombre\}\par
+\\end\{figure\}\par
+\par
+\par
+\\begin\{figure\}[H]\par
+  \\centering\par
+  \\includegraphics[width=1\\linewidth]\{newplot (3).png\}\par
+  \\caption\{Agrupamiento en el a\'f1o 2015\}\par
+  \\label\{fig:nombre\}\par
+\\end\{figure\}\par
+\par
+\par
+\par
+\par
+\par
+\\subsection\{Conclusiones del algoritmo no supervisado\}\par
+\par
+Se aprecia c\'f3mo el agrupamiento se mantiene relativamente constante al pasar los a\'f1os y c\'f3mo el algoritmo parece haberse concentrado en la parte de los datos con alta expectativa de vida y clasificando el resto de datos dentro del mismo cluster.\par
+\par
+\par
+\\section\{Metodolog\'eda supervisada\}\par
+\par
+Para este an\'e1lisis se tomar\'e1 como variable objetivo la expectativa de vida para cada pa\'eds, se utilizar\'e1 un regresor de potenciaci\'f3n de gradiente apoyado de la librer\'eda \\texttt\{skforecast\}.\par
+La raz\'f3n principal de elecci\'f3n de la librer\'eda previamente mencionada es su m\'e9todo \\texttt\{ForecasterAutoregMultiSeries\}, el cual implementa un regresor de potenciaci\'f3n de gradiente multivariado, este m\'e9todo recibe dos argumentos:\par
+\\begin\{itemize\}\par
+\tab\\item Un conjunto de series de tiempo referentes a nuestra variable objetivo. \par
+\\item Un conjunto de series de tiempo referentes a variables ex\'f3genas a la variable objetivo, las cuales se presuponen afectan a la variable objetivo. \par
+\\end\{itemize\}\par
+Debido a la baja cantidad de observaciones por serie de tiempo, se utilizar\'e1 un regresor que s\'f3lo toma en cuenta las \'faltimas 5 observaciones de la serie de tiempo.\par
+\par
+\\subsection\{Resultados del algoritmo supervisado\}\par
+Al aplicar el algoritmo previamente mencionado y calculando el error medio absoluto entre el conjunto de prueba y el conjunto de validaci\'f3n, se obtiene que en promedio el modelo esta desviado de las observaciones reales por .5 a\'f1os, es decir 6 meses, sin embargo, como se puede apreciar en la figura 4, este promedio podr\'eda estar sesgado dado que la mayor\'eda de los errores medios absolutos son notablemente bajos, mientras que contamos con algunos valores at\'edpicos.\par
+Se anexa tambien las predicciones concatenadas a las primeras 5 series de tiempo del conjunto.\par
+\par
+\\begin\{figure\}[H]\par
+  \\centering\par
+  \\includegraphics[width=1\\linewidth]\{EMA (1).pdf\}\par
+  \\caption\{Histograma de error medio absoluto\}\par
+  \\label\{fig:nombre\}\par
+\\end\{figure\}\par
+\par
+\\begin\{figure\}[H]\par
+  \\centering\par
+  \\includegraphics[width=1\\linewidth]\{Predicciones.png\}\par
+  \\caption\{Predicciones comparadas con el conjunto de validaci\'f3n\}\par
+  \\label\{fig:nombre\}\par
+\\end\{figure\}\par
+\par
+\par
+\par
+\\subsection\{M\'e9tricas para algoritmo supervisado\}\par
+\par
+Para evaluar el modelo y proceder con la optimizaci\'f3n de hiper par\'e1metros, se procedi\'f3 a analizar los siguientes tipos de m\'e9tricas:\par
+\\begin\{itemize\}\par
+\\item Error promedio al cuadrado.\par
+\\item Error promedio absoluto.\par
+\\item Error promedio absoluto porcentual.\par
+\\item Error promedio cuadrado logar\'edtmico.\par
+\\end\{itemize\}\par
+\par
+Despu\'e9s de optimizar los hiperparametros se consiguieron las siguientes m\'e9tricas de desempe\'f1o:\par
+\par
+\\begin\{center\}\par
+\\begin\{tabular\}\{||c c c c||\}\par
+   \\hline\par
+ M\'e9trica & Promedio & M\'e1ximo & M\'ednimo \\\\ [0.5ex] \par
+ \\hline\\hline\par
+ Promedio al cuadrado & 0.810385 & 19.811893 & 0.000090 \\\\\par
+ \\hline\par
+ Promedio absoluto & 0.560838 & 4.408434 & 0.007003\\\\\par
+ \\hline\par
+ Promedio absoluto porcentual & 0.008592 & 0.078813 & 0.000097\\\\\par
+ \\hline\par
+ Promedio cuadrado logar\'edtmico & 2.219828e-04 & 6.929335e-03 & 1.693964e-08 \\\\\par
+ \\hline\par
+\\end\{tabular\}\par
+\\end\{center\}\par
+\par
+\par
+Al evaluar el gr\'e1fico de caja (Figura 10) de la m\'e9trica \ldblquote Promedio absoluto\rdblquote  podemos apreciar que se tienen muchos valores at\'edpicos, sin embargo, la gran mayor\'eda de los datos est\'e1n contenidos en un error entre 0 y 1, lo cual considerando las bajas observaciones y la variable respuesta medida es un error aceptable, siendo esto referente a m\'e1ximo un a\'f1o de la esperanza de vida dado los estimadores macroecon\'f3micos usados.\par
+\par
+\\begin\{figure\}[H]\par
+  \\centering\par
+  \\includegraphics[width=1\\linewidth]\{boxplot.pdf\}\par
+  \\caption\{Gr\'e1fico de caja del error promedio absoluto del modelo\}\par
+  \\label\{fig:nombre\}\par
+\\end\{figure\}\par
+\par
+\\section\{Conclusiones\}\par
+Ambos enfoques, tanto supervisado como no supervisado, plantean conclusiones diferentes pero relevantes, el modelo supervisado dice que dado las variables macroecon\'f3micas adecuadas se puede llegar a predecir la expectativa de vida de un pa\'eds a\'fan contando con pocas observaciones, esto se sustenta en que, aunque el modelo supervisado se entren\'f3 solo con 10 observaciones por pa\'eds, eso fue suficiente para lograr un error promedio de 6 meses con respecto al conjunto de validaci\'f3n.\par
+\\newline\par
+Dejando como aprendizaje que la expectativa de vida no es algo ajeno a las decisiones a gran escala del gobierno del pa\'eds, esto si bien podr\'eda parecer obvio, no se debe dejar pasar por alto dado que, aunque no sea dif\'edcil ver que la mortalidad infantil afecta a la calidad de vida, la relaci\'f3n entre la misma y el grado de inmunidad a una enfermedad como la polio no es tan f\'e1cil de ver a primera instancia.\par
+\\newline\par
+Mientras tanto, los m\'e9todos no supervisados al no ser efectivos permiten recordar que la falta de respuesta es una respuesta en si misma. Al no ser capaz de agrupar los diferentes pa\'edses por sus condiciones macroecon\'f3micas, aunque tengan expectativa de vida similar, permite ver que si bien estas variables constituyen un indicador suficiente para su predicci\'f3n no representan toda la informaci\'f3n relevante como para decir que el modelo esta completo. \par
+\\newline\par
+Las principales conclusiones que se pueden observar aqu\'ed es que este es un estudio que definitivamente tiene futuro sin embargo, para que el an\'e1lisis sea congruente y permita tener un mayor entendimiento se deben cumplir dos cosas:\par
+\\begin\{itemize\}\par
+\\item 1.- Se debe continuar extrayendo los indicadores macroecon\'f3micos para tener un conjunto de informaci\'f3n m\'e1s grande a futuro.\par
+\\item 2.- Se deber\'eda considerar agregar m\'e1s variables de campos no estudiados. Sin ir muy lejos en el conjunto de datos no se incluye ninguna variable de percepci\'f3n de calidad de vida.\par
+\\end\{itemize\}\par
+Por \'faltimo, se considera que este an\'e1lisis es importante debido a una raz\'f3n muy espec\'edfica, los datos provienen de a\'f1os previos a la pandemia.\par
+Esto quiere decir que de cierta manera el an\'e1lisis provee una visi\'f3n de las variables relevantes en un estudio de predicci\'f3n de expectativa de vida, mientras que al mismo tiempo sirve de recordatorio que en los estudios siempre habr\'e1 variables que no se puedan controlar y que no se puedan predecir.\par
+No importa qu\'e9 tanta informaci\'f3n pasada se hubiera tenido ni qu\'e9 tantas variables significativas se hubieran incluido, el modelo no hubiera sido capaz de predecir el impacto de la pandemia en la expectativa de vida en lo m\'e1s m\'ednimo y precisamente por eso se decidi\'f3 hacer este estudio.\par
+\par
+\par
+\par
+\\begin\{thebibliography\}\{9\}\par
+\\bibitem\{texbook\}\par
+Bernd Fritzke (1995) A Growing Neural Gas Network Learns\par
+Topologies.\par
+\par
+\\bibitem\{lamport94\}\par
+\par
+Halil Ertan (2022) Multivariate Time Series Clustering Using Growing Neural Gas and Spectral Clustering\par
+\par
+\\bibitem\{lamport94\}\par
+\par
+Joaqu\'edn Amat Rodrigo, Javier Escobar Ortiz (2022) Modelos de forecasting globales: modelado de m\'faltiples series temporales con machine learning\par
+\\end\{thebibliography\}\par
+\par
+\par
+\\end\{document\}\par
+}
+ 
